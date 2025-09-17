@@ -68,7 +68,7 @@ if not preguntas:
 # ------------------- Variables -------------------
 puntaje = 0
 indice_pregunta = 0
-tiempo_restante = 15
+tiempo_restante = 20
 timer_job = None
 aceptando_respuesta = False
 
@@ -235,7 +235,7 @@ def mostrar_pregunta():
     resultado_lbl.config(text="")
     marcador_lbl.config(text=f"Puntos: {puntaje}")
 
-    tiempo_restante = 15
+    tiempo_restante = 20
     aceptando_respuesta = True
     actualizar_cronometro()
 
@@ -251,19 +251,29 @@ def verificar_respuesta(letra):
 
     cancelar_timer_job()
     detener_sonido()
-    for b in botones: b.config(state="disabled")
+    for b in botones: 
+        b.config(state="disabled")
 
     correcta = preguntas[indice_pregunta]["respuesta"].strip().upper()
     if letra == correcta:
         puntaje += 100
         play(snd_correcto)
         resultado_lbl.config(text="✅ ¡Correcto! +100", fg="#00d084")
+
+        # 🔹 Enviar señal a Arduino → encender verdes
+        arduino.write(b"CORRECTO\n")
+
         indice_pregunta += 1
         ventana.after(900, mostrar_pregunta)
     else:
         play(snd_incorrecto)
         resultado_lbl.config(text=f"❌ Incorrecto. Era {correcta}", fg="#ff6868")
+
+        # 🔹 Enviar señal a Arduino → encender rojas
+        arduino.write(b"INCORRECTO\n")
+
         ventana.after(900, lambda: finalizar_juego(False))
+
 
 def finalizar_juego(ganador):
     global aceptando_respuesta
